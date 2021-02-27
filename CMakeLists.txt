@@ -15,41 +15,23 @@ endif()
 
 # Install options
 option(INSTALL_DOCS "Install documentation" ON)
-option(INSTALL_PKG_CONFIG_MODULE "Install ogg.pc file" ON)
-option(INSTALL_CMAKE_PACKAGE_MODULE "Install CMake package configiguration module" ON)
+option(INSTALL_CMAKE_PACKAGE_MODULE "Install CMake package configuration module" ON)
 
-# Extract project version from configure.ac
-file(READ configure.ac CONFIGURE_AC_CONTENTS)
-string(REGEX MATCH "AC_INIT\\(\\[libogg\\],\\[([0-9]*).([0-9]*).([0-9]*)" DUMMY ${CONFIGURE_AC_CONTENTS})
+# Project version
+set(VERSION_STRING "1.3.4")
+string(REGEX MATCH "([0-9]*).([0-9]*).([0-9]*)" DUMMY ${VERSION_STRING})
 set(PROJECT_VERSION_MAJOR ${CMAKE_MATCH_1})
 set(PROJECT_VERSION_MINOR ${CMAKE_MATCH_2})
 set(PROJECT_VERSION_PATCH ${CMAKE_MATCH_3})
 set(PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
 
-# Extract library version from configure.ac
-string(REGEX MATCH "LIB_CURRENT=([0-9]*)" DUMMY ${CONFIGURE_AC_CONTENTS})
-set(LIB_CURRENT ${CMAKE_MATCH_1})
-
-string(REGEX MATCH "LIB_AGE=([0-9]*)" DUMMY ${CONFIGURE_AC_CONTENTS})
-set(LIB_AGE ${CMAKE_MATCH_1})
-
-string(REGEX MATCH "LIB_REVISION=([0-9]*)" DUMMY ${CONFIGURE_AC_CONTENTS})
-set(LIB_REVISION ${CMAKE_MATCH_1})
+# Library version
+set(LIB_CURRENT 8)
+set(LIB_AGE 8)
+set(LIB_REVISION PROJECT_VERSION_PATCH)
 
 math(EXPR LIB_SOVERSION "${LIB_CURRENT} - ${LIB_AGE}")
 set(LIB_VERSION "${LIB_SOVERSION}.${LIB_AGE}.${LIB_REVISION}")
-
-
-# Helper function to configure pkg-config files
-function(configure_pkg_config_file pkg_config_file_in)
-    set(prefix ${CMAKE_INSTALL_PREFIX})
-    set(exec_prefix ${CMAKE_INSTALL_FULL_BINDIR})
-    set(libdir ${CMAKE_INSTALL_FULL_LIBDIR})
-    set(includedir ${CMAKE_INSTALL_FULL_INCLUDEDIR})
-    set(VERSION ${PROJECT_VERSION})
-    string(REPLACE ".in" "" pkg_config_file ${pkg_config_file_in})
-    configure_file(${pkg_config_file_in} ${pkg_config_file} @ONLY)
-endfunction()
 
 message(STATUS "Configuring ${PROJECT_NAME} ${PROJECT_VERSION}")
 
@@ -117,8 +99,6 @@ if(BUILD_FRAMEWORK)
     )
 endif()
 
-configure_pkg_config_file(ogg.pc.in)
-
 install(TARGETS ogg
     EXPORT OggTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -151,12 +131,6 @@ if(INSTALL_CMAKE_PACKAGE_MODULE)
 
     install(FILES ${PROJECT_BINARY_DIR}/OggConfig.cmake ${PROJECT_BINARY_DIR}/OggConfigVersion.cmake
         DESTINATION ${CMAKE_INSTALL_CONFIGDIR}
-    )
-endif()
-
-if(INSTALL_PKG_CONFIG_MODULE)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ogg.pc
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
     )
 endif()
 
